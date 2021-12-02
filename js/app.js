@@ -4,7 +4,7 @@ import vertex from "./shader/vertex.glsl";
 import dat from "../node_modules/three/examples/jsm/libs/dat.gui.module";
 import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls";
 import brush from "../assets/ParticleSystem_64x.png"
-import stripes from "../assets/stripes.jpeg";
+import stripes from "../assets/shot.png";
 export default class Sketch {
   constructor(options) {
     this.scene = new THREE.Scene();
@@ -36,6 +36,8 @@ export default class Sketch {
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
         format: THREE.RGBAFormat,
+        wrapS: THREE.MirroredRepeatWrapping,
+        wrapT: THREE.MirroredRepeatWrapping,
     })
 
     var frustumSize = this.height;
@@ -93,7 +95,7 @@ export default class Sketch {
         time: { value: 0 },
         uDisplacement: {value: null },
         uTexture: { value: this.stripesPattern },
-
+        resolution: { value: new THREE.Vector2(this.width, this.height) },
       },
       // wireframe: true,
       // transparent: true,
@@ -101,10 +103,10 @@ export default class Sketch {
       fragmentShader: fragment,
     });
 
-    this.max = 50;
+    this.max = 500;
   
-    this.geometry = new THREE.PlaneGeometry(100, 100, 1, 1);
-    this.geometryFullScreen = new THREE.PlaneGeometry(this.width, this.height, 1, 1);
+    this.geometry = new THREE.BoxBufferGeometry(50, 50,50, 50, 1);
+    this.geometryFullScreen = new THREE.BoxBufferGeometry(this.width, this.height, this.height, 1);
     this.meshGroup = new THREE.Group();
 
     for ( let i = 0; i < this.max; i++ ) {
@@ -113,14 +115,15 @@ export default class Sketch {
       wireframe: false, 
       map: new THREE.TextureLoader().load(brush), 
       transparent: true,
-      blending: THREE.NormalBlending,
+      blending: THREE.BlendingDstFactor, 
       depthWrite: false,
       depthTest: false,
       visible: true});
       this.mesh = new THREE.Mesh(this.geometry, this.material2);
       this.mesh.position.set(this.mouse.x+ Math.random()*100, this.mouse.y*Math.random()*100, Math.random() * 500 - 250);
       this.mesh.rotation.set(Math.random() * 500 - 250, Math.random() * 500 - 250, Math.random() * 500 - 250);
-      this.mesh.scale.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+      //this.mesh.scale.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+      this.mesh.scale.set(1,1,1,)
       this.meshGroup.add(this.mesh);
 
     }
@@ -147,6 +150,7 @@ export default class Sketch {
     m.position.x = x;
     m.position.y = y;
     m.material.opacity = 1;
+    m.scale.set(1,1,1);
     m.scale.set(Math.random() * 10 - 1, Math.random() * 10 - 1, Math.random() * 10 - 1);
    // console.log('party')
     
@@ -170,14 +174,23 @@ export default class Sketch {
     this.time += 0.05;
     this.material.uniforms.time.value = this.time;
     requestAnimationFrame(this.render.bind(this));
+
+    this.renderer.setRenderTarget(this.baseTexture);
+    this.renderer.render(this.scene, this.camera);
+    this.material.uniforms.uDisplacement.value = this.baseTexture.texture;
+    this.renderer.setRenderTarget(null);
+    this.renderer.clear();
     this.renderer.render(this.bufferScene, this.camera);
+
+    
+
     this.meshGroup.children.forEach(mesh => {
-      mesh.rotation.z += 0.02;
-      mesh.material.opacity *= 0.96;
+      mesh.rotation.z += 0.2;
+      mesh.material.opacity *= 0.90;
       mesh.scale.x = 0.98*mesh.scale.x;
       mesh.scale.y = 0.98*mesh.scale.y;
       mesh.scale.z = 0.98*mesh.scale.z;
-      //mesh.scale.set(Math.cos(this.time)*5*0.98.mesh.scale.x, Math.sin(this.time)*5*0.98.mesh.scale.y, Math.sin(-this.time)*5);
+      ///mesh.scale.set(Math.cos(this.time)*5*0.98.mesh.scale.x, Math.sin(this.time)*5*0.98.mesh.scale.y, Math.sin(-this.time)*5);
      // mesh.position.set(this.mouse.x, this.mouse.y, this.mesh.position.z);
     })
   }
