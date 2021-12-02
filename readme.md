@@ -1,1 +1,4 @@
-    #BASIC TEMPLATE FOR THREE.JS WITH ESLINT AND PRETTIER FILES
+    #2 scene with feedback template
+
+    to start 
+    parcel index.html
